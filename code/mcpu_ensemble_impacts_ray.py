@@ -28,7 +28,7 @@ def eq_impact(bldgs,
     n, t = append_vulnerability(b, bldgs_vuln)
 
     # extract the probabilities of collapse and attached to buildings
-    b['low'], b['mid'], b['high'] = weighted_probability_of_collapse(t, n, b[shake_ras].values)
+    b[f'low_{shake_ras}'], b[f'mid_{shake_ras}'], b[f'high_{shake_ras}'] = weighted_probability_of_collapse(t, n, b[shake_ras].values)
 
     return b
 
@@ -56,7 +56,7 @@ output_futures = []
 # Iterate through the inputs and run the function in parallel
 for raster in list_rasters[:2]:
     # Call the function asynchronously and append the output future to the list
-    output_futures.append(eq_impact.remote(bldg,
+    output_futures.append(eq_impact.remote(bldg.head(1000),
                                            vuln,
                                            raster,
                                            rasdir))
@@ -65,9 +65,9 @@ for raster in list_rasters[:2]:
 outputs = ray.get(output_futures)
 
 # write building datasets to disk
-for output in outputs:
+for i, output in enumerate(outputs):
     # Write the DataFrame to a CSV file
-    output.to_csv('results' / f'output_{output}.csv', index=False)
+    output.to_csv(f'results/output_{list_rasters[i]}.csv', index=False)
 
     # Shutdown Ray
     ray.shutdown()
