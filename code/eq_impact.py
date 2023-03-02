@@ -15,16 +15,12 @@ def eq_impact(bldgs,
 
     # append raster value to buildings
     b = Pcentroid_Rsampling(bldgs, shake_ras, shake_dir)
-    b = b.drop('index_right', axis=1)
+    # b = b.drop('index_right', axis=1)
 
     # append the meteor vulnerability to buildings
     n, t = append_vulnerability(b, bldgs_vuln)
 
     # extract the probabilities of collapse and attached to buildings
-    b['low'], b['mid'], b['high'] = weighted_probability_of_collapse(t, n, b.PGA_osm)
-
-    # export output to csv
-    # time_string = time.strftime("%Y%m%d")
-    # b.to_csv(shake_rasdir / f"{time_string}_{ras[:-4]}.csv")
+    b['low'], b['mid'], b['high'] = weighted_probability_of_collapse(t, n, b[shake_ras].values)
 
     return b
