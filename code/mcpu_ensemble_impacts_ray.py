@@ -63,6 +63,7 @@ def ls_impact(bldgs,
 
     from scipy.stats import lognorm
     import pandas as pd
+    from tqdm import trange
     from mods_geom_ops import Pcentroid_Rsampling, join_Pcentroid_at_Pl
 
     # sample PGA values at slope unit
@@ -88,7 +89,7 @@ def ls_impact(bldgs,
     scenarios_results = np.zeros(bldgs.osm_id.values.shape[0], np.float64)
 
     # Monte Carlo simulation of landslides for earthquake
-    for n in range(n_scenarios):
+    for n in trange(n_scenarios):
         scenario_impact = mh_cascade_scenario(EXP_IDS=bldgs.osm_id.values,
                                               PPGA_SU=bldgs.pPGA_su.values,
                                               SI_SU=bldgs.SI.values,
