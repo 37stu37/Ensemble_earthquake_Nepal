@@ -35,8 +35,9 @@ def eq_impact(bldgs,
 
 ###################################################################
 # Load datapath and datasets
-datadir = Path('/Users/alexdunant/Documents/Github/Ensemble_earthquake_Nepal/shp')
-rasdir = Path('/Users/alexdunant/Documents/Github/Ensemble_earthquake_Nepal/tif')
+GDrive = Path('G:/My Drive/Projects/sajag-nepal/Workfolder/Ensemble_earthquake_Nepal')
+datadir = GDrive / 'shp'
+rasdir = GDrive / 'tif'
 
 # Load data
 bldg = gpd.read_file(datadir / "bldgs_preprocs_light_districts [NatBoundary].shp")
@@ -54,7 +55,7 @@ ray.init()
 output_futures = []
 
 # Iterate through the inputs and run the function in parallel
-for raster in list_rasters[:2]:
+for raster in list_rasters[:10]:
     # Call the function asynchronously and append the output future to the list
     output_futures.append(eq_impact.remote(bldg.head(1000),
                                            vuln,
@@ -67,7 +68,7 @@ outputs = ray.get(output_futures)
 # write building datasets to disk
 for i, output in enumerate(outputs):
     # Write the DataFrame to a CSV file
-    output.to_csv(f'results/output_{list_rasters[i]}.csv', index=False)
+    output.to_csv(GDrive / 'results' / f'output_{list_rasters[i]}.csv', index=False)
 
     # Shutdown Ray
     ray.shutdown()
