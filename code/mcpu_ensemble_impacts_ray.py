@@ -122,22 +122,49 @@ list_rasters = [file for file in os.listdir(rasdir) if file.lower().endswith(".t
 ###################################################################
 # run algo in parallel
 
+##########################
+# Earthquake
+
 # Initialize Ray
 ray.init()
 
 # Create a list to hold the output futures
-output_eq_futures = []
-output_ls_futures = []
+output_futures = []
 
 # Iterate through the inputs and run the function in parallel
-for raster in list_rasters:
+for raster in list_rasters[:5]:
     # Call the function asynchronously and append the output future to the list
-    output_eq_futures.append(eq_impact.remote(bldg,
-                                              vuln,
-                                              raster,
-                                              rasdir))
+    output_futures.append(eq_impact.remote(bldg,
+                                           vuln,
+                                           raster,
+                                           rasdir))
 
-    output_ls_futures.append(ls_impact.remote(bldg,
+
+# Wait for all the output futures to complete
+outputs = ray.get(output_futures)
+
+# write building datasets to disk
+for index, output in enumerate(outputs):
+    # Write the DataFrame to a CSV file
+    output.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__eqImpact.csv', index=False)
+
+# Shutdown Ray
+ray.shutdown()
+
+
+##########################
+# Landslide
+
+# Initialize Ray
+ray.init()
+
+# Create a list to hold the output futures
+output_futures = []
+
+# Iterate through the inputs and run the function in parallel
+for raster in list_rasters[:5]:
+    # Call the function asynchronously and append the output future to the list
+    output_futures.append(ls_impact.remote(bldg,
                                               slope,
                                               raster,
                                               rasdir,
@@ -145,14 +172,12 @@ for raster in list_rasters:
                                               10000))
 
 # Wait for all the output futures to complete
-outputs_eq = ray.get(output_eq_futures)
-outputs_ls = ray.get(output_ls_futures)
+outputs = ray.get(output_futures)
 
 # write building datasets to disk
-for index, (output_eq, output_ls) in enumerate(zip(outputs_eq, outputs_ls)):
+for index, output in enumerate(outputs):
     # Write the DataFrame to a CSV file
-    output_eq.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__eqImpact.csv', index=False)
-    output_ls.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__lsImpact.csv', index=False)
+    output.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__lsImpact.csv', index=False)
 
 # Shutdown Ray
 ray.shutdown()
