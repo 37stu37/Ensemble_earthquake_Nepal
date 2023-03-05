@@ -105,7 +105,7 @@ def ls_impact(bldgs,
 
 ###################################################################
 # Load datapath and datasets
-GDrive = Path('G:/My Drive/Projects/sajag-nepal/Workfolder/Ensemble_earthquake_Nepal')
+GDrive = Path('/Users/alexdunant/Documents/Github/Ensemble_earthquake_Nepal')
 datadir = GDrive / 'shp'
 rasdir = GDrive / 'tif'
 
@@ -119,65 +119,112 @@ fR_stats = pd.read_csv(datadir / "bldgs_fR_stats.csv")
 fR_stats = fR_stats[["osm_id", "FlowR_mean", "FlowR_std"]]
 list_rasters = [file for file in os.listdir(rasdir) if file.lower().endswith(".tif")]
 
+print(list_rasters)
+
 ###################################################################
 # run algo in parallel
 
-##########################
-# Earthquake
-
-# Initialize Ray
-ray.init()
-
-# Create a list to hold the output futures
-output_futures = []
-
-# Iterate through the inputs and run the function in parallel
-for raster in list_rasters[:5]:
-    # Call the function asynchronously and append the output future to the list
+# ##########################
+# # Earthquake
+#
+# # Initialize Ray
+# ray.init(num_cpus=5)
+#
+# # Create a list to hold the output futures
+# output_futures = []
+#
+# # Iterate through the inputs and run the function in parallel
+# for raster in list_rasters[:5]:
+#     # Call the function asynchronously and append the output future to the list
     output_futures.append(eq_impact.remote(bldg,
                                            vuln,
                                            raster,
                                            rasdir))
+#
+#
+# # Wait for all the output futures to complete
+# outputs = ray.get(output_futures)
+#
+# # write building datasets to disk
+# for index, output in enumerate(outputs):
+#     # Write the DataFrame to a CSV file
+#     output.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__eqImpact.csv', index=False)
+#
+# # Shutdown Ray
+# ray.shutdown()
+#
+#
+# ##########################
+# # Landslide
+#
+# # Initialize Ray
+# ray.init(num_cpus=5)
+#
+# # Create a list to hold the output futures
+# output_futures = []
+#
+# # Iterate through the inputs and run the function in parallel
+# for raster in list_rasters[:5]:
+#     # Call the function asynchronously and append the output future to the list
+#     output_futures.append(ls_impact.remote(bldg, slope, raster, rasdir, fR_stats, 10000))
+#
+# # Wait for all the output futures to complete
+# outputs = ray.get(output_futures)
+#
+# # write building datasets to disk
+# for index, output in enumerate(outputs):
+#     # Write the DataFrame to a CSV file
+#     output.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__lsImpact.csv', index=False)
+#
+# # Shutdown Ray
+# ray.shutdown()
+#
+
+##################################################
+# Landslide
+##################################################
+
+# Define a remote function
+@ray.remote
+def remote_function(input_raster):
+    return ls_impact(bldg, slope, input_raster, rasdir, fR_stats, 10000)
 
 
-# Wait for all the output futures to complete
-outputs = ray.get(output_futures)
+# Create a list of remote function calls
+remote_function_calls = [remote_function.remote(raster) for raster in list_rasters]
+
+# Use Ray to run the remote function calls in parallel
+results = ray.get(remote_function_calls)
 
 # write building datasets to disk
-for index, output in enumerate(outputs):
+for index, output in enumerate(results):
     # Write the DataFrame to a CSV file
-    output.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__eqImpact.csv', index=False)
+    output.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__lsImpact.csv', index=False)
 
 # Shutdown Ray
 ray.shutdown()
 
+##################################################
+# Earthquake
+##################################################
 
-##########################
-# Landslide
 
-# Initialize Ray
-ray.init()
+# Define a remote function
+@ray.remote
+def remote_function(input_raster):
+    return eq_impact(bldg, vuln, input_raster, rasdir)
 
-# Create a list to hold the output futures
-output_futures = []
 
-# Iterate through the inputs and run the function in parallel
-for raster in list_rasters[:5]:
-    # Call the function asynchronously and append the output future to the list
-    output_futures.append(ls_impact.remote(bldg,
-                                              slope,
-                                              raster,
-                                              rasdir,
-                                              fR_stats,
-                                              10000))
+# Create a list of remote function calls
+remote_function_calls = [remote_function.remote(raster) for raster in list_rasters]
 
-# Wait for all the output futures to complete
-outputs = ray.get(output_futures)
+# Use Ray to run the remote function calls in parallel
+results = ray.get(remote_function_calls)
 
 # write building datasets to disk
-for index, output in enumerate(outputs):
+for index, output in enumerate(results):
     # Write the DataFrame to a CSV file
-    output.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__lsImpact.csv', index=False)
+    output.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__eqImpact.csv', index=False)
 
 # Shutdown Ray
 ray.shutdown()
