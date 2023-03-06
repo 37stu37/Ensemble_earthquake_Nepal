@@ -40,7 +40,7 @@ def eq_impact(bldgs,
 
 ###################################################################
 # Load datapath and datasets
-GDrive = Path('/')
+GDrive = Path('G:\My Drive\Projects\sajag-nepal\Workfolder\Ensemble_earthquake_Nepal')
 datadir = GDrive / 'shp'
 rasdir = GDrive / 'tif'
 
