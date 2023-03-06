@@ -21,6 +21,8 @@ def eq_impact(bldgs,
     # Load libraries
     from mods_vulnerability import append_vulnerability, weighted_probability_of_collapse
     from mods_geom_ops import Pcentroid_Rsampling
+    
+    print(f"Task {shake_ras} enter")
 
     # append raster value to buildings
     b = Pcentroid_Rsampling(bldgs, shake_ras, shake_dir)
@@ -35,12 +37,14 @@ def eq_impact(bldgs,
 
     bldgs.to_csv(f'./results/{shake_ras[8:-4]}__eqImpact.csv', index=False)
 
+    print(f"Task {shake_ras} exit")
+    
     return print(f'{shake_ras[8:-4]}__eqImpact.csv')
 
 
 ###################################################################
 # Load datapath and datasets
-GDrive = Path('G:\My Drive\Projects\sajag-nepal\Workfolder\Ensemble_earthquake_Nepal')
+GDrive = Path('D:\Github\Ensemble_earthquake_Nepal')
 datadir = GDrive / 'shp'
 rasdir = GDrive / 'tif'
 
@@ -62,10 +66,10 @@ print(list_rasters)
 
 if __name__ == '__main__':
     # Create a pool of worker processes
-    pool = multiprocessing.Pool(processes=5)
+    pool = multiprocessing.Pool(processes=7)
 
     # Create a list of argument tuples
-    argument_tuples = [(bldg, vuln, list_rasters[i], rasdir) for i in range(len(list_rasters[:5]))]
+    argument_tuples = [(bldg, vuln, raster, rasdir) for raster in list_rasters]
 
     # Apply the function to each tuple of arguments in parallel using the starmap method
     results = pool.starmap(eq_impact, argument_tuples)
@@ -74,4 +78,4 @@ if __name__ == '__main__':
     pool.close()
     pool.join()
 
-    print(results) # prints [2, 4, 6, 8, 10]
+    print(results)
