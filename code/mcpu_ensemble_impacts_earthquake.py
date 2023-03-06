@@ -35,7 +35,7 @@ def eq_impact(bldgs,
     b[f'low_{shake_ras}'], b[f'mid_{shake_ras}'], b[f'high_{shake_ras}'] = weighted_probability_of_collapse(t, n, b[
         shake_ras].values)
 
-    bldgs.to_csv(f'./results/{shake_ras[8:-4]}__eqImpact.csv', index=False)
+    b.to_csv(f'./results/{shake_ras[8:-4]}__eqImpact.csv', index=False)
 
     print(f"Task {shake_ras} exit")
     
@@ -52,10 +52,6 @@ rasdir = GDrive / 'tif'
 bldg = gpd.read_file(datadir / "bldgs_preprocs_light_districts [NatBoundary].shp")
 vuln = gpd.read_file(datadir / "npl-ic-exp-dist_UTM45.shp")
 vuln = vuln[["size_dist", "cnt_dist", "geometry"]]
-slope = gpd.read_file(datadir / "slopeunits_preprocs [Natboundary].shp")
-slope = slope[["su_id", "SI", "geometry"]]
-fR_stats = pd.read_csv(datadir / "bldgs_fR_stats.csv")
-fR_stats = fR_stats[["osm_id", "FlowR_mean", "FlowR_std"]]
 list_rasters = [file for file in os.listdir(rasdir) if file.lower().endswith(".tif")]
 
 print(list_rasters)
@@ -66,7 +62,7 @@ print(list_rasters)
 
 if __name__ == '__main__':
     # Create a pool of worker processes
-    pool = multiprocessing.Pool(processes=7)
+    pool = multiprocessing.Pool(processes=8)
 
     # Create a list of argument tuples
     argument_tuples = [(bldg, vuln, raster, rasdir) for raster in list_rasters]
