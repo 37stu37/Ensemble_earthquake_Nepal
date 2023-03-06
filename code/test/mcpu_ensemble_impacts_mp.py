@@ -1,14 +1,12 @@
-import ray
 from pathlib import Path
 import os
 import geopandas as gpd
 import pandas as pd
 import numpy as np
 from numba import njit
+import multiprocessing
 
 
-# Define the function to run in parallel
-@ray.remote
 def eq_impact(bldgs,
               bldgs_vuln,
               shake_ras,
@@ -35,7 +33,9 @@ def eq_impact(bldgs,
     b[f'low_{shake_ras}'], b[f'mid_{shake_ras}'], b[f'high_{shake_ras}'] = weighted_probability_of_collapse(t, n, b[
         shake_ras].values)
 
-    return b
+    bldgs.to_csv(f'./results/{shake_ras[8:-4]}__eqImpact.csv', index=False)
+
+    return print(f'{shake_ras[8:-4]}__eqImpact.csv')
 
 
 @njit()
@@ -53,7 +53,6 @@ def mh_cascade_scenario(EXP_IDS, PPGA_SU, SI_SU, FLOWR_MEAN, FLOWR_STD):
     return a
 
 
-@ray.remote
 def ls_impact(bldgs,
               slopes,
               shake_ras,
@@ -99,13 +98,15 @@ def ls_impact(bldgs,
         scenarios_results = scenarios_results + scenario_impact
 
     bldgs['impact'] = scenarios_results / n_scenarios
+    bldgs.to_csv(f'./results/{shake_ras[8:-4]}__lsImpact.csv', index=False)
 
-    return bldgs
+    return print(f'{shake_ras[8:-4]}__lsImpact.csv')
+
 
 
 ###################################################################
 # Load datapath and datasets
-GDrive = Path('/Users/alexdunant/Documents/Github/Ensemble_earthquake_Nepal')
+GDrive = Path('/')
 datadir = GDrive / 'shp'
 rasdir = GDrive / 'tif'
 
@@ -124,59 +125,21 @@ print(list_rasters)
 ###################################################################
 # run algo in parallel
 
-##################################################
-# Landslide
-##################################################
 
-ray.init()
-# Define a remote function
-# @ray.remote
-# def remote_function(input_raster):
-#     return ls_impact(bldg, slope, input_raster, rasdir, fR_stats, 10000)
+if __name__ == '__main__':
+    # Create a pool of worker processes
+    pool = multiprocessing.Pool(processes=5)
 
-@ray.remote
-def remote_function(large_file_bldg, input_raster):
-    return ls_impact(large_file_bldg, slope, input_raster, rasdir, fR_stats, 10000)
+    # Create a list of argument tuples
+    argument_tuples = [(bldg, slope, list_rasters[i], rasdir, fR_stats, 10000) for i in range(len(list_rasters))]
+    # argument_tuples = [(bldg, vuln, list_rasters[i], rasdir) for i in range(len(list_rasters))]
 
+    # Apply the function to each tuple of arguments in parallel using the starmap method
+    results = pool.starmap(ls_impact, argument_tuples)
+    # results = pool.starmap(eq_impact, argument_tuples)
 
-# Serialize the large file using ray.put
-large_file_id = ray.put(bldg)
+    # Close the pool of worker processes
+    pool.close()
+    pool.join()
 
-# Create a list of remote function calls
-remote_function_calls = [remote_function.remote(large_file_id, raster) for raster in list_rasters]
-
-# Use Ray to run the remote function calls in parallel
-results = ray.get(remote_function_calls)
-
-# write building datasets to disk
-for index, output in enumerate(results):
-    # Write the DataFrame to a CSV file
-    output.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__lsImpact.csv', index=False)
-
-# Shutdown Ray
-ray.shutdown()
-
-##################################################
-# Earthquake
-##################################################
-ray.init()
-
-# Define a remote function
-@ray.remote
-def remote_function(input_raster):
-    return eq_impact(bldg, vuln, input_raster, rasdir)
-
-
-# Create a list of remote function calls
-remote_function_calls = [remote_function.remote(raster) for raster in list_rasters]
-
-# Use Ray to run the remote function calls in parallel
-results = ray.get(remote_function_calls)
-
-# write building datasets to disk
-for index, output in enumerate(results):
-    # Write the DataFrame to a CSV file
-    output.to_csv(GDrive / 'results' / f'{list_rasters[index][8:-4]}__eqImpact.csv', index=False)
-
-# Shutdown Ray
-ray.shutdown()
+    print(results) # prints [2, 4, 6, 8, 10]

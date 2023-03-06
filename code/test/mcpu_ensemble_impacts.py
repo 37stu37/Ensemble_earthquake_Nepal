@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 import geopandas as gpd
 
-from eq_impact import eq_impact
+from code.test.eq_impact import eq_impact
 
 
 def worker(input_bldgs,
@@ -48,8 +48,8 @@ def main_eq_ens(input_bldgs,
 
 ###################################################################
 # Load datapath and datasets
-datadir = Path("/Users/alexdunant/Documents/Github/Ensemble_earthquake_Nepal/shp")
-rasdir = Path("/Users/alexdunant/Documents/Github/Ensemble_earthquake_Nepal/tif")
+datadir = Path("/shp")
+rasdir = Path("/tif")
 
 # Load data
 bldg = gpd.read_file(datadir / "bldgs_preprocs_light_districts [NatBoundary].shp")
