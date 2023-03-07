@@ -92,7 +92,7 @@ list_rasters = [file for file in os.listdir(rasdir) if file.lower().endswith(".t
 print(list_rasters)
 
 # run algorithm
-for raster in tqdm(list_rasters[21:]):
+for raster in tqdm(list_rasters):
     ls_impact(bldg, slope,raster, rasdir, fR_stats, 10000)
 
 print("done")
