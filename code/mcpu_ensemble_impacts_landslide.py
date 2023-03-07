@@ -4,10 +4,10 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 from numba import njit
-from tqdm import tqdm, trange
+from tqdm import tqdm
 
 
-@njit()#parallel=True
+@njit(parallel=True)
 def mh_cascade_scenario(EXP_IDS, PPGA_SU, SI_SU, FLOWR_MEAN, FLOWR_STD):
     a = np.zeros(EXP_IDS.shape[0], np.float64)
 
@@ -53,45 +53,24 @@ def ls_impact(bldgs,
     # add FlowR values to osm
     bldgs = pd.merge(bldgs, flowr_stats, on="osm_id", how="left")
 
-    # # generate landslide scenarios for the earthquake
-    # scenarios_results = np.zeros(bldgs.osm_id.values.shape[0], np.float64)
-
-    # # Monte Carlo simulation of landslides for earthquake
-    # scenario_impacts = np.empty(n_scenarios)
-    # for n in prange(n_scenarios):
-    #     scenario_impacts[n] = mh_cascade_scenario(EXP_IDS=bldgs.osm_id.values,
-    #                                           PPGA_SU=bldgs.pPGA_su.values,
-    #                                           SI_SU=bldgs.SI.values,
-    #                                           FLOWR_MEAN=bldgs.FlowR_mean.values,
-    #                                           FLOWR_STD=bldgs.FlowR_std.values)
-
-    # scenarios_results = np.sum(scenario_impacts)
-    # # scenarios_results = scenarios_results + scenario_impact
-
-    # bldgs['impact'] = scenarios_results / n_scenarios
-    # bldgs.to_csv(f'./results/{shake_ras[8:-4]}_prange__lsImpact.csv', index=False)
-    
-    
-    
     # generate landslide scenarios for the earthquake
-    # ls_impacts = []
     scenarios_results = np.zeros(bldgs.osm_id.values.shape[0], np.float64)
 
     # Monte Carlo simulation of landslides for earthquake
-    for n in range(n_scenarios):
-        scenario_impact = mh_cascade_scenario(EXP_IDS=bldgs.osm_id.values,
+    scenario_impacts = np.empty(n_scenarios)
+    for n in prange(n_scenarios):
+        scenario_impacts[n] = mh_cascade_scenario(EXP_IDS=bldgs.osm_id.values,
                                               PPGA_SU=bldgs.pPGA_su.values,
                                               SI_SU=bldgs.SI.values,
                                               FLOWR_MEAN=bldgs.FlowR_mean.values,
                                               FLOWR_STD=bldgs.FlowR_std.values)
 
-        scenarios_results = scenarios_results + scenario_impact
+    scenarios_results = np.sum(scenario_impacts)
 
     bldgs['impact'] = scenarios_results / n_scenarios
-    bldgs.to_csv(f'./results/{shake_ras[8:-4]}__lsImpact.csv', index=False)
-
-    return print(f'{shake_ras[8:-4]}__lsImpact.csv')
-
+    bldgs.to_csv(f'./results/{shake_ras[8:-4]}_prange__lsImpact.csv', index=False)
+    
+    return
 
 
 ###################################################################
