@@ -8,12 +8,12 @@ rng = default_rng()
 def Pcentroid_Rsampling(P, Rname, Rdir):
     import xarray as xr
     import rioxarray as rio
-    r = rio.open_rasterio(Rdir / Rname)
+    r = rio.open_rasterio(f"{Rdir}/{Rname}")
     x_indexer = xr.DataArray(P.geometry.centroid.x, dims=["point"])
     y_indexer = xr.DataArray(P.geometry.centroid.y, dims=["point"])
 	# extract raster value at points
     Rvalues = r.sel(x=x_indexer, y=y_indexer, method="nearest")
-    P[Rname] = Rvalues.values.flatten()
+    P['pgas'] = Rvalues.values.flatten()
     return P
 
 

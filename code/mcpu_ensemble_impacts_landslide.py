@@ -57,7 +57,7 @@ def ls_impact(bldgs,
     scenarios_results = np.zeros(bldgs.osm_id.values.shape[0], np.float64)
 
     # Monte Carlo simulation of landslides for earthquake
-    scenario_impacts = np.empty(n_scenarios)
+    scenario_impacts = np.empty((n_scenarios, scenarios_results.shape[0]))
     for n in prange(n_scenarios):
         scenario_impacts[n] = mh_cascade_scenario(EXP_IDS=bldgs.osm_id.values,
                                               PPGA_SU=bldgs.pPGA_su.values,
@@ -92,7 +92,7 @@ list_rasters = [file for file in os.listdir(rasdir) if file.lower().endswith(".t
 print(list_rasters)
 
 # run algorithm
-for raster in tqdm(list_rasters):
+for raster in tqdm(list_rasters[:5]):
     ls_impact(bldg, slope,raster, rasdir, fR_stats, 10000)
 
 print("done")
