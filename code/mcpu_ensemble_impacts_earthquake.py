@@ -30,7 +30,7 @@ def eq_impact(buildings, vulnerability, shake_ras, shake_dir):
     # extract the probabilities of collapse and attached to buildings
     b[f'high_{shake_ras}'], b[f'mid_{shake_ras}'], b[f'low_{shake_ras}'] = calculate_probability_of_collapse(b)
 
-    b.to_csv(f'./results/{shake_ras[8:-4]}__eqImpact.csv', index=False)
+    b.to_csv(f'/Volumes/LaCie/tmp/results/{shake_ras[8:-4]}__eqImpact.csv', index=False)
 
     print(f"Task {shake_ras} exit")
     
@@ -52,34 +52,26 @@ vuln = vuln[["size_dist", "cnt_dist", "geometry"]]
 n, t = extract_vulnerability_parameters_from(vuln)
 vuln = probability_of_collapse_mean_parameters(t, n, vuln)
 
-####
-# test
-raster = "gorkha2015_pga_Mosaiczero_Warp.tif"
-rasdir = "/Users/alexdunant/Downloads"
+list_rasters = [file for file in os.listdir(rasdir) if file.lower().endswith(".tif")]
 
-eq_impact(bldg, vuln, raster, rasdir)
-####
-#
-# list_rasters = [file for file in os.listdir(rasdir) if file.lower().endswith(".tif")]
-#
-# print(list_rasters)
-#
-# ###################################################################
-# # run algo in parallel
-#
-#
-# if __name__ == '__main__':
-#     # Create a pool of worker processes
-#     pool = multiprocessing.Pool(processes=8)
-#
-#     # Create a list of argument tuples
-#     argument_tuples = [(bldg, vuln, raster, rasdir) for raster in list_rasters]
-#
-#     # Apply the function to each tuple of arguments in parallel using the starmap method
-#     results = pool.starmap(eq_impact, argument_tuples)
-#
-#     # Close the pool of worker processes
-#     pool.close()
-#     pool.join()
-#
-#     print(results)
+print(list_rasters)
+
+###################################################################
+# run algo in parallel
+
+
+if __name__ == '__main__':
+    # Create a pool of worker processes
+    pool = multiprocessing.Pool(processes=2)
+
+    # Create a list of argument tuples
+    argument_tuples = [(bldg, vuln, raster, rasdir) for raster in list_rasters]
+
+    # Apply the function to each tuple of arguments in parallel using the starmap method
+    results = pool.starmap(eq_impact, argument_tuples)
+
+    # Close the pool of worker processes
+    pool.close()
+    pool.join()
+
+    print(results)
