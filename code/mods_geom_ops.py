@@ -26,6 +26,14 @@ def join_Pcentroid_at_Pl(Pc, Pccols, Pl, Plcols):
 	return j
 
 
+def join_Pcentroid_at_Polygons_all_columns(Pc, Pl):
+	import geopandas as gpd
+	c = gpd.GeoDataFrame(Pc, crs=Pc.crs, geometry=Pc.geometry.centroid)
+	j = gpd.sjoin(c, Pl, how="left")
+	j = gpd.GeoDataFrame(j, geometry=Pc.geometry, crs=Pc.crs)
+	return j
+
+
 
 @njit()
 def mh_cascade_scenario(EXP_IDS, PPGA_SU, SI_SU, FLOWR_MEAN, FLOWR_STD):

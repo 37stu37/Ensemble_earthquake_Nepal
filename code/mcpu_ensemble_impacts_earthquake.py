@@ -30,7 +30,7 @@ def eq_impact(buildings, vulnerability, shake_ras, shake_dir):
     # extract the probabilities of collapse and attached to buildings
     b[f'high_{shake_ras}'], b[f'mid_{shake_ras}'], b[f'low_{shake_ras}'] = calculate_probability_of_collapse(b)
 
-    b.to_csv(f'/Volumes/LaCie/tmp/results/{shake_ras[8:-4]}__eqImpact.csv', index=False)
+    b.to_csv(f'/Volumes/LaCie/tmp/results_full_ensemble/{shake_ras[8:-4]}__eqImpact.csv', index=False)
 
     print(f"Task {shake_ras} exit")
     
