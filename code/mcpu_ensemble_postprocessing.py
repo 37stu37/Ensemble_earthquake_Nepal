@@ -43,8 +43,18 @@ bldgs["mean_ls_probability"] = [np.mean(k) for k in zip(*arrays)]
 # attach ward to buildings
 geobldgs = gpd.GeoDataFrame(bldgs, geometry='geometry')
 ward = gpd.read_file("/Users/alexdunant/Library/CloudStorage/GoogleDrive-37stu37@gmail.com/My Drive/Projects/sajag-nepal/Workfolder/Hyperedge_mh_methodology/data/shapes/LocalbodiesWARD_753_UTM45N.shp")
+ward = ward[["DISTRICT", "GaPa_NaPa", "NEW_WARD_N", "X", "Y", "geometry"]]
+ward["ward_id"] = np.arange(0, len(ward), 1)
 
-geobldgs_ward = join_Pcentroid_at_Polygons_all_columns(geobldgs, ward)
+geobldgs_ward = gpd.sjoin(ward, geobldgs, how="left")
+res_ward = geobldgs_ward.groupby("ward_id").agg({"mean_eq_probability_complete": ['mean', 'sum', 'max', 'std'], "mean_ls_probability": ['mean', 'sum', 'max', 'std'], "geometry": 'first'}).reset_index()
+res_ward.columns=res_ward.columns.droplevel(0)
+res_ward.columns = ['ward_id', 'eq_mean', 'eq_sum', 'eq_max', 
+                    'ls_mean', 'ls_sum', 'ls_max', 'geometry']
+
+res_ward = gpd.GeoDataFrame(res_ward, geometry='geometry', crs=ward.crs)
+res_ward['total_sum'] = res_ward.eq_sum + res_ward.ls_sum
 
 # write to disk
-geobldgs_ward.to_file(GDrive / "code" / "results" / "mean_results_ensemble.gpkg", driver="GPKG")
+geobldgs.to_file(GDrive / "code" / "results" / "mean_results_ensemble.gpkg", driver="GPKG")
+res_ward.to_file(GDrive / "code" / "results" / "ward_results_ensemble.gpkg", driver="GPKG")
