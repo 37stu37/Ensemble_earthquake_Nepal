@@ -49,12 +49,12 @@ ward["ward_id"] = np.arange(0, len(ward), 1)
 geobldgs_ward = gpd.sjoin(ward, geobldgs, how="left")
 res_ward = geobldgs_ward.groupby("ward_id").agg({"mean_eq_probability_complete": ['mean', 'sum', 'max', 'std'], "mean_ls_probability": ['mean', 'sum', 'max', 'std'], "geometry": 'first'}).reset_index()
 res_ward.columns=res_ward.columns.droplevel(0)
-res_ward.columns = ['ward_id', 'eq_mean', 'eq_sum', 'eq_max', 
-                    'ls_mean', 'ls_sum', 'ls_max', 'geometry']
+res_ward.columns = ['ward_id', 'eq_mean', 'eq_sum', 'eq_max', 'eq_std', 
+                    'ls_mean', 'ls_sum', 'ls_max', 'ls_std', 'geometry']
 
 res_ward = gpd.GeoDataFrame(res_ward, geometry='geometry', crs=ward.crs)
 res_ward['total_sum'] = res_ward.eq_sum + res_ward.ls_sum
 
 # write to disk
-geobldgs.to_file(GDrive / "code" / "results" / "mean_results_ensemble.gpkg", driver="GPKG")
-res_ward.to_file(GDrive / "code" / "results" / "ward_results_ensemble.gpkg", driver="GPKG")
+# geobldgs.to_file(GDrive / "code" / "results" / "mean_results_ensemble.gpkg", driver="GPKG")
+res_ward.to_file(GDrive / "code" / "results" / "ward_ensemble_stats.gpkg", driver="GPKG")
