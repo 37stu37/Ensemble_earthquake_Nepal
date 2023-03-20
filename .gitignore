@@ -7,3 +7,6 @@
 *.shx
 *.csv
 *.xml
+code/results
+code/results/.DS_Store
+code/results/mean_results_ensemble.gpkg
