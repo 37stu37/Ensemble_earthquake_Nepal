@@ -67,7 +67,7 @@ def ls_impact(bldgs,
         scenarios_results = scenarios_results + scenario_impact
 
     bldgs['impact'] = scenarios_results / n_scenarios
-    bldgs.to_csv(f'/Volumes/LaCie/tmp/results_full_ensemble/{shake_ras[8:-4]}__lsImpact.csv', index=False)
+    bldgs.to_csv(f'/Volumes/LaCie/workfolder/sajag_nepal/Ensemble_results/21_03_23/{shake_ras[8:-4]}__lsImpact.csv', index=False)
 
     return print(f'{shake_ras[8:-4]}__lsImpact.csv')
 
