@@ -13,3 +13,6 @@ code/results/mean_results_ensemble.gpkg
 *.gpkg
 *.gpkg
 code/results/mean_results_ensemble.gpkg
+*.gpkg
+eq_mid+ls_afdesigner.pdf
+eq_mid_afdesigner.pdf

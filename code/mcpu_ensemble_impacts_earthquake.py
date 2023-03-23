@@ -63,7 +63,7 @@ print(list_rasters)
 
 if __name__ == '__main__':
     # Create a pool of worker processes
-    pool = multiprocessing.Pool(processes=3)
+    pool = multiprocessing.Pool(processes=2)
 
     # Create a list of argument tuples
     argument_tuples = [(bldg, vuln, raster, rasdir) for raster in list_rasters]
